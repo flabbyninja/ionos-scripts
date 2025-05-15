@@ -52,7 +52,8 @@ def main():
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     }
-    logging.info("Calling IONOS API to update source IP")
+    logging.info(
+        "Calling IONOS API to update source IP for domain %s", target_domain)
     result = update_dynamic_dns(headers, target_domain)
     logging.debug("API result: %s", result)
     logging.info("Dynamic DNS update complete")

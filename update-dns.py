@@ -1,10 +1,12 @@
 import os
 import logging
-import requests
 from dotenv import load_dotenv
 
+import rest_utils
+
+IONOS_TIMEOUT = 5
+
 TARGET_DOMAIN = "example.com"
-DEFAULT_TIMEOUT = 5
 DYNDNS_URL = "https://api.hosting.ionos.com/dns/v1/dyndns"
 
 logging.basicConfig(
@@ -12,18 +14,6 @@ logging.basicConfig(
     level=logging.DEBUG,
     datefmt='%Y-%m-%d %H:%M:%S'
 )
-
-
-def post_to_rest_endpoint(url, headers, payload):
-    response = requests.post(url, headers=headers,
-                             json=payload, timeout=DEFAULT_TIMEOUT)
-    if response.status_code == 200 or response.status_code == 201:
-        try:
-            return response.json()
-        except ValueError:
-            return response.text
-    else:
-        return f"Error: {response.status_code} - {response.reason}"
 
 
 def update_dynamic_dns(headers, domain):
@@ -34,7 +24,8 @@ def update_dynamic_dns(headers, domain):
         "description": "My DynamicDns"
     }
 
-    result = post_to_rest_endpoint(DYNDNS_URL, headers, payload)
+    result = rest_utils.post_to_rest_endpoint(
+        DYNDNS_URL, headers, payload, IONOS_TIMEOUT)
     return result
 
 

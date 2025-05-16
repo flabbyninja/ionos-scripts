@@ -3,7 +3,7 @@ import requests
 DEFAULT_TIMEOUT = 2
 
 
-def get_rest_endpoint(url, headers, params, timeout=DEFAULT_TIMEOUT):
+def get_rest_endpoint(url, headers, params=None, timeout=DEFAULT_TIMEOUT):
     response = requests.get(url, headers=headers,
                             params=params, timeout=timeout)
     if response.status_code == 200:

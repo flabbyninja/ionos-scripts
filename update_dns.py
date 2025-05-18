@@ -8,7 +8,6 @@ import dns_utils
 
 IONOS_TIMEOUT = 5
 
-TARGET_DOMAIN = "example.com"
 DYNDNS_URL = "https://api.hosting.ionos.com/dns/v1/dyndns"
 
 logging.basicConfig(

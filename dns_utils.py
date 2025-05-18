@@ -26,7 +26,7 @@ def get_a_record_ionos(headers, target_domain):
         raise ValueError("Target zone does not exist", target_domain)
 
     # get details of the zone id saved
-    zone_details = get_zone_details(target_zone['id'], headers)
+    zone_details = get_zone_details_ionos(target_zone['id'], headers)
     logging.debug("Zone details for %s: %s", target_domain, zone_details)
 
     # A Record is
@@ -36,7 +36,7 @@ def get_a_record_ionos(headers, target_domain):
     return a_record
 
 
-def get_zone_details(zone_id, headers):
+def get_zone_details_ionos(zone_id, headers):
     result = rest_utils.get_rest_endpoint(
         f"{DNS_ZONES_API}/{zone_id}", headers)
 

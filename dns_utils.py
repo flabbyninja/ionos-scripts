@@ -1,6 +1,6 @@
-import rest_utils
 import logging
 import socket
+import rest_utils
 
 DNS_ZONES_API = "https://api.hosting.ionos.com/dns/v1/zones"
 IPIFY_PUBLIC_API = "https://api.ipify.org"
@@ -36,9 +36,9 @@ def get_a_record_ionos(headers, target_domain):
     return a_record
 
 
-def get_zone_details(id, headers):
+def get_zone_details(zone_id, headers):
     result = rest_utils.get_rest_endpoint(
-        f"{DNS_ZONES_API}/{id}", headers)
+        f"{DNS_ZONES_API}/{zone_id}", headers)
 
     return result
 

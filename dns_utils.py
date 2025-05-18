@@ -12,7 +12,7 @@ logging.basicConfig(
 )
 
 
-def get_a_record(headers, target_domain):
+def get_a_record_ionos(headers, target_domain):
 
     # get list of zones
     result = rest_utils.get_rest_endpoint(DNS_ZONES_API, headers)
@@ -38,7 +38,7 @@ def get_a_record(headers, target_domain):
 
 def get_zone_details(id, headers):
     result = rest_utils.get_rest_endpoint(
-        f"https://api.hosting.ionos.com/dns/v1/zones/{id}", headers)
+        f"{DNS_ZONES_API}/{id}", headers)
 
     return result
 

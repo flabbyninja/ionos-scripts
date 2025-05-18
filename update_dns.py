@@ -3,6 +3,7 @@ import logging
 from dotenv import load_dotenv
 
 import rest_utils
+import dns_utils
 
 IONOS_TIMEOUT = 5
 
@@ -37,17 +38,22 @@ def main():
     if (target_domain is None) or (len(target_domain) == 0):
         raise ValueError("Target zone not specified", target_domain)
 
-    logging.info("Loading API key and target domain from environment")
-    headers = {
-        'X-API-Key': api_key,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-    }
-    logging.info(
-        "Calling IONOS API to update source IP for domain %s", target_domain)
-    result = update_dynamic_dns(headers, target_domain)
-    logging.debug("API result: %s", result)
-    logging.info("Dynamic DNS update complete")
+    if dns_utils.is_public_ip_up_to_date(target_domain) is False:
+        logging.info("Public IP and DNS do not match - performing update")
+
+        logging.info("Loading API key and target domain from environment")
+        headers = {
+            'X-API-Key': api_key,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+        logging.info(
+            "Calling IONOS API to update source IP for domain %s", target_domain)
+        result = update_dynamic_dns(headers, target_domain)
+        logging.debug("API result: %s", result)
+        logging.info("Dynamic DNS update complete")
+    else:
+        logging.info("No Dynamic DNS update required.")
 
 
 main()

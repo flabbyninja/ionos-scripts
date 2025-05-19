@@ -1,3 +1,10 @@
+"""
+Uses the IONOS Developer DNS API to update DynamicDNS config of
+a domain name to match the public IP of where the call was made from.
+This will get the current IP from DNS, and find the current public IP 
+and only perform the update if they don't currently match. This prevents
+unnecessary calls to the IONOS API.
+"""
 import os
 import logging
 
@@ -18,6 +25,9 @@ logging.basicConfig(
 
 
 def update_dynamic_dns(headers, domain):
+    """
+    Perform the IONOS API call to perform the Dynamic DNS update
+    """
     payload = {
         "domains": [
             f"{domain}"
@@ -31,6 +41,12 @@ def update_dynamic_dns(headers, domain):
 
 
 def main():
+    """
+    Load API key for IONOS API and config for domain from .env
+    Checks whether the public IP already matches what DNS is set to.
+    If there is a mismatch, make the call to IONOS to update
+    DynamicDNS config
+    """
     load_dotenv()
     api_key = os.getenv("API_KEY")
     target_domain = os.getenv("DOMAIN")

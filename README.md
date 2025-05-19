@@ -19,7 +19,9 @@ This will do a number of things:
 
 ## Config
 
-Configuration is stored in a `.env` file in the same directory as the script. There are 2 important config parameters.
+Configuration is stored in a `.env` file in the same directory as the script. You can create a copy from `sample.env` and put in the details for your environment.
+
+There are 2 important config parameters.
 
 | Parameter | Meaning                                      | Example                            |
 | --------- | -------------------------------------------- | ---------------------------------- |

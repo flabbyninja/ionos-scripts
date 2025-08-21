@@ -24,6 +24,15 @@ logging.basicConfig(
 )
 
 
+def disable_dynamic_dns(headers):
+    """
+    Perform the IONOS API call to disable Dynamic DNS
+    """
+    result = rest_utils.delete_rest_endpoint(
+        DYNDNS_URL, headers, IONOS_TIMEOUT)
+    return result
+
+
 def update_dynamic_dns(headers, domain):
     """
     Perform the IONOS API call to perform the Dynamic DNS update
@@ -50,6 +59,7 @@ def main():
     load_dotenv()
     api_key = os.getenv("API_KEY")
     target_domain = os.getenv("DOMAIN")
+    delete_first = os.getenv("DELETE_FIRST")
 
     if (target_domain is None) or (len(target_domain) == 0):
         raise ValueError("Target zone not specified", target_domain)
@@ -63,11 +73,21 @@ def main():
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
+
+        if delete_first == '1':
+            logging.info("Config: Disabling Dynamic DNS before updating")
+            disable_response = disable_dynamic_dns(headers)
+            logging.info(disable_response)
+
         logging.info(
             "Calling IONOS API to update source IP for domain %s", target_domain)
         result = update_dynamic_dns(headers, target_domain)
         logging.debug("API result: %s", result)
-        logging.info("Dynamic DNS update complete")
+        logging.info("Dynamic DNS result received complete")
+        dyn_update_url = result["updateUrl"]
+        logging.info("Update URL from response is %s", dyn_update_url)
+        result = rest_utils.get_rest_endpoint(dyn_update_url)
+        print(result)
     else:
         logging.info("No Dynamic DNS update required.")
 

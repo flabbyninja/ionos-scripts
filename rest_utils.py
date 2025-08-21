@@ -6,13 +6,14 @@ import requests
 DEFAULT_TIMEOUT = 2
 
 
-def get_rest_endpoint(url, headers=None, params=None, timeout=DEFAULT_TIMEOUT):
+def get_rest_endpoint(url, headers=None, params=None, timeout=DEFAULT_TIMEOUT) -> dict | str:
     """
     Utility method to support GET method calls to RESTful endpoint. Supports custom
     headers, passing params and configurable timeout.
     """
     response = requests.get(url, headers=headers,
                             params=params, timeout=timeout)
+
     if response.status_code == 200:
         # print(response.url)
         # print(response.text)
@@ -32,6 +33,21 @@ def post_to_rest_endpoint(url, headers, payload, timeout=DEFAULT_TIMEOUT):
     """
     response = requests.post(url, headers=headers,
                              json=payload, timeout=timeout)
+    if response.status_code == 200 or response.status_code == 201:
+        try:
+            return response.json()
+        except ValueError:
+            return response.text
+    else:
+        return f"Error: {response.status_code} - {response.reason}"
+
+
+def delete_rest_endpoint(url, headers, timeout=DEFAULT_TIMEOUT):
+    """
+    Utility method to support DELETE method calls to RESTful endpoint. Supports custom header, and
+    configurable timeout
+    """
+    response = requests.delete(url, headers=headers, timeout=timeout)
     if response.status_code == 200 or response.status_code == 201:
         try:
             return response.json()

@@ -50,10 +50,7 @@ def get_zone_details_ionos(zone_id, headers):
     Perform the Query against the IONOS DNS API to return details of a particular
     zone given the IONOS Zone ID
     """
-    result = rest_utils.get_rest_endpoint(
-        f"{DNS_ZONES_API}/{zone_id}", headers)
-
-    return result
+    return rest_utils.get_rest_endpoint(f"{DNS_ZONES_API}/{zone_id}", headers)
 
 
 def is_a_record(zone_entry):
@@ -97,15 +94,18 @@ def filter_zone_results(zones):
     return target_zone
 
 
-def lookup_dns(hostname):
+def lookup_dns(hostname) -> str | None:
     """
     Return IP address for DNS hostname using Python socket libs
     """
-    ip_address = socket.gethostbyname(hostname)
+    try:
+        ip_address = socket.gethostbyname(hostname)
+    except socket.error:
+        ip_address = None
     return ip_address
 
 
-def get_public_facing_ip():
+def get_public_facing_ip() -> str:
     """
     Use IPIFY public API to query public facing IP
     """
@@ -113,7 +113,7 @@ def get_public_facing_ip():
     return public_ip
 
 
-def is_public_ip_up_to_date(hostname):
+def is_public_ip_up_to_date(hostname: str) -> bool:
     """
     Lookup DNS for hostname and see if it matches the current public facing IP.
     Returns True if they are both the same, and False if there's a mismatch.

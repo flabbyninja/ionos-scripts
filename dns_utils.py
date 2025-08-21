@@ -133,8 +133,8 @@ def is_public_ip_up_to_date(hostname: str) -> bool:
     logging.debug("Public facing IP is currently set as %s", public_ip)
 
     if public_ip == dns_ip:
-        logging.info("Public IP and DNS record match (%s, %s)",
-                     hostname, public_ip)
+        logging.info("Public IP and DNS record match (%s) for domain %s",
+                     public_ip, hostname)
         return True
     else:
         logging.info("Public IP and DNS record mismatch (Host: %s, DNS: %s, Public IP: %s)",

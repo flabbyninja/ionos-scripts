@@ -66,10 +66,12 @@ def main():
     target_domain = os.getenv("DOMAIN")
     delete_first = os.getenv("DELETE_FIRST")
 
+    # Error is the domain that is to be updated has not been specified
     if (target_domain is None) or (len(target_domain) == 0):
         raise ValueError("Target zone not specified", target_domain)
 
-    if dns_utils.is_public_ip_up_to_date(target_domain) is True:
+    # Check if current public IP of connection is same as DNS. Only update if they differ.
+    if dns_utils.is_public_ip_up_to_date(target_domain) is False:
         logging.info("Public IP and DNS do not match - performing update")
 
         logging.info("Loading API key and target domain from environment")
@@ -79,6 +81,7 @@ def main():
             'Accept': 'application/json'
         }
 
+        # Allow option to disable Dynamic DNS before making update, in case a full reset is required
         if delete_first == '1':
             logging.info("Config: Disabling Dynamic DNS before updating")
             disable_dynamic_dns(headers)
@@ -86,18 +89,22 @@ def main():
         logging.info(
             "Calling IONOS API to update source IP for domain %s", target_domain)
 
+        # Invoke DynamicDNS API to configure for current public IP
         result = update_dynamic_dns(headers, target_domain)
         if result["success"]:
-            logging.info("Successful call to update Dynamic DNS: %s",
-                         result["data"])
+            logging.info("Dynamic DNS API call successful")
+            logging.debug("API payload returned: %s", result["data"])
         else:
             logging.info("Error updating Dynamic DNS: %s", result["error"])
 
+        # Grab URL from response that needs called to invoke the update
         dyn_update_data = result["data"]
         dyn_update_url = dyn_update_data["updateUrl"]
 
-        logging.info("Update URL from response is %s", dyn_update_url)
+        logging.info("Update URL extracted from response. Invoking DNS update using: %s",
+                     dyn_update_url)
 
+        # Invoke URL to make the change to the DNS record
         result = rest_utils.get_rest_endpoint(dyn_update_url)
 
         if result["success"]:

@@ -1,7 +1,7 @@
 
 """
-Utility methods to query DNS details about a domain. Implementations that pull 
-back public facing IP address using external services, that query details from 
+Utility methods to query DNS details about a domain. Implementations that pull
+back public facing IP address using external services, that query details from
 the IONOS Developer API, and that use Python DNS to pull back IP mapping
 """
 import logging
@@ -62,7 +62,7 @@ def is_a_record(zone_entry):
 
 def is_target_domain(zone, target_domain):
     """
-    Filter method for zone summary entries returned from Ionos DNS Query to 
+    Filter method for zone summary entries returned from Ionos DNS Query to
     extract details including zone ID for specified domain
     """
     return zone['name'] == target_domain
@@ -105,12 +105,18 @@ def lookup_dns(hostname) -> str | None:
     return ip_address
 
 
-def get_public_facing_ip() -> str:
+def get_public_facing_ip():
     """
     Use IPIFY public API to query public facing IP
     """
-    public_ip = rest_utils.get_rest_endpoint(IPIFY_PUBLIC_API)
-    return public_ip
+    result = rest_utils.get_rest_endpoint(IPIFY_PUBLIC_API)
+
+    if result["success"]:
+        logging.info("Public IP retrieved: %s", result["data"])
+        return result["data"]
+    else:
+        logging.info("Error retrieving public IP", result["error"])
+        return None
 
 
 def is_public_ip_up_to_date(hostname: str) -> bool:

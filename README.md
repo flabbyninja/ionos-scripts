@@ -23,10 +23,11 @@ Configuration is stored in a `.env` file in the same directory as the script. Yo
 
 There are 2 important config parameters.
 
-| Parameter | Meaning                                      | Example                            |
-| --------- | -------------------------------------------- | ---------------------------------- |
-| API_KEY   | Ionos API Key in the format `id.secret`      | `abcd34a67.hKy7JHfgltyrewokm#hfgm` |
-| DOMAIN    | The domain name to be updated for DynamicDNS | `example.com`                      |
+| Parameter | Meaning                                                                                                                                                | Example                            |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| API_KEY   | Ionos API Key in the format `id.secret`                                                                                                                | `abcd34a67.hKy7JHfgltyrewokm#hfgm` |
+| DOMAIN    | The domain name to be updated for DynamicDNS                                                                                                           | `example.com`                      |
+| MODE      | enable: retrieve and output update URL, disable: Turn off DynDNS for domain, update: Invoke URL to update the DNS entry, refresh: Do enable and update | 'MODE="update"                     |
 
 The IONOS API key must be created from your account. This will give you the info to put in the `.env` file, allowing auth with the Ionos API.
 

@@ -32,9 +32,9 @@ def disable_dynamic_dns(headers):
         DYNDNS_URL, headers, IONOS_TIMEOUT)
 
     if result["success"]:
-        logging.info("Successfully disabled Dynamic DNS:", result["data"])
+        logging.info("Successfully disabled Dynamic DNS: %s", result["data"])
     else:
-        logging.info("Error disabling Dynamic DNS:", result["error"])
+        logging.info("Error disabling Dynamic DNS: %s", result["error"])
 
 
 def update_dynamic_dns(headers, domain):
@@ -54,6 +54,33 @@ def update_dynamic_dns(headers, domain):
     return result
 
 
+def get_mode_params(mode: str):
+    enable_mode, disable_mode, update_mode = False, False, False
+    if mode == "get":
+        enable_mode = True
+    elif mode == "delete":
+        disable_mode = True
+    elif mode == "update":
+        update_mode = True
+    elif mode == "refresh":
+        enable_mode = True
+        update_mode = True
+
+    logging.info("Mode value: %s. Flags set to enable_mode: %s, disable_mode: %s, update_mode: %s",
+                 mode, enable_mode, disable_mode, update_mode)
+    return (enable_mode, disable_mode, update_mode)
+
+
+def call_update_url(url: str):
+    # Invoke URL to make the change to the DNS record
+    result = rest_utils.get_rest_endpoint(url)
+
+    if result["success"]:
+        logging.info("Updated Dynamic DNS successfully")
+    else:
+        logging.info("Error updating Dynamic DNS: %s", result["error"])
+
+
 def main():
     """
     Load API key for IONOS API and config for domain from .env
@@ -64,15 +91,21 @@ def main():
     load_dotenv()
     api_key = os.getenv("API_KEY")
     target_domain = os.getenv("DOMAIN")
-    delete_first = os.getenv("DELETE_FIRST")
+    mode = os.getenv("MODE")
+    update_url = os.getenv("UPDATE_URL")
+
+    logging.info("Update URL in config set to: %s", update_url)
+
+    # Set mode flags from the config
+    (enable_mode, disable_mode, update_mode) = get_mode_params(mode)
 
     # Error is the domain that is to be updated has not been specified
     if (target_domain is None) or (len(target_domain) == 0):
         raise ValueError("Target zone not specified", target_domain)
 
     # Check if current public IP of connection is same as DNS. Only update if they differ.
-    if dns_utils.is_public_ip_up_to_date(target_domain) is False:
-        logging.info("Public IP and DNS do not match - performing update")
+    if dns_utils.is_public_ip_up_to_date(target_domain) is True:
+        logging.info("Public IP and DNS do not match - performing processing")
 
         logging.info("Loading API key and target domain from environment")
         headers = {
@@ -82,35 +115,38 @@ def main():
         }
 
         # Allow option to disable Dynamic DNS before making update, in case a full reset is required
-        if delete_first == '1':
+        if disable_mode:
             logging.info("Config: Disabling Dynamic DNS before updating")
             disable_dynamic_dns(headers)
 
-        logging.info(
-            "Calling IONOS API to update source IP for domain %s", target_domain)
+        if enable_mode:
 
-        # Invoke DynamicDNS API to configure for current public IP
-        result = update_dynamic_dns(headers, target_domain)
-        if result["success"]:
-            logging.info("Dynamic DNS API call successful")
-            logging.debug("API payload returned: %s", result["data"])
-        else:
-            logging.info("Error updating Dynamic DNS: %s", result["error"])
+            logging.info(
+                "Calling IONOS API to get update URL for domain %s", target_domain)
 
-        # Grab URL from response that needs called to invoke the update
-        dyn_update_data = result["data"]
-        dyn_update_url = dyn_update_data["updateUrl"]
+            # Invoke DynamicDNS API to configure for current public IP
+            result = update_dynamic_dns(headers, target_domain)
+            if result["success"]:
+                logging.info("Dynamic DNS API call successful")
+                logging.debug("API payload returned: %s", result["data"])
+            else:
+                logging.info(
+                    "Error rertieving Dynamic DNS URL: %s", result["error"])
 
-        logging.info("Update URL extracted from response. Invoking DNS update using: %s",
-                     dyn_update_url)
+            # Grab URL from response that needs called to invoke the update
+            dyn_update_data = result["data"]
+            update_url = dyn_update_data["updateUrl"]
 
-        # Invoke URL to make the change to the DNS record
-        result = rest_utils.get_rest_endpoint(dyn_update_url)
+            logging.info("Update URL extracted from response: %s",
+                         update_url)
 
-        if result["success"]:
-            logging.info("Updated Dynamic DNS successfully")
-        else:
-            logging.info("Error updating Dynamic DNS", result["error"])
+        if update_mode:
+            if update_url is None:
+                logging.error(
+                    "No update URL specified. Update will not be performed")
+            else:
+                logging.info("Calling update URL to update DynDNS")
+                call_update_url(update_url)
 
     else:
         logging.info("No Dynamic DNS update required.")

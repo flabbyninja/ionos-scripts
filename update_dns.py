@@ -104,7 +104,7 @@ def main():
         raise ValueError("Target zone not specified", target_domain)
 
     # Check if current public IP of connection is same as DNS. Only update if they differ.
-    if dns_utils.is_public_ip_up_to_date(target_domain) is True:
+    if dns_utils.is_public_ip_up_to_date(target_domain) is False:
         logging.info("Public IP and DNS do not match - performing processing")
 
         logging.info("Loading API key and target domain from environment")
